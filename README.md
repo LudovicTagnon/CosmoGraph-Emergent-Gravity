@@ -37,14 +37,14 @@ Interface interactive (Streamlit) permettant d'explorer :
 
 ### Prérequis
 - Python 3.8+
-- Environnement virtuel recommandé
+- Environnement virtuel recommandé (à créer localement, non fourni dans le dépôt)
 
 ### Installation
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/your-repo/cosmograph.git
-cd cosmograph
+git clone https://github.com/LudovicTagnon/CosmoGraph-Emergent-Gravity.git
+cd CosmoGraph-Emergent-Gravity
 
 # Créer un environnement virtuel
 python -m venv .venv
@@ -59,13 +59,14 @@ pip install -r requirements.txt
 Pour régénérer les données et lancer le Dashboard interactif :
 
 ```bash
-# (Optionnel) Recalculer les jeux de données
+# (Optionnel) Recalculer les jeux de données / figures clés
+cd python_project
 python scripts/multiverse_scan.py
 python scripts/arrow_of_time.py
-python scripts/ricci_curvature.py
 python scripts/detect_dark_matter.py
 python scripts/simulate_expansion.py
-python scripts/real_world_test.py
+python scripts/power_spectrum_combined.py
+python scripts/fetch_and_test_real_sdss.py
 
 # Lancer l'interface
 streamlit run app.py
