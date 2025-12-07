@@ -1,0 +1,50 @@
+PRC — VALIDATIONS, CONTRÔLES ET ROBUSTESSE (L=18, ROI 8^3)
+
+Résumé exécutable.
+Sur TEST (L=18, ROI 8^3), D = (m + K̃ + K_Regge) surpasse A = (m seul) en ordre (ρ, τ, C-index) et en échelle (relRMSE), avec IC95 serrés. La calibration (α≈0, β≈1) reste correcte jusqu’à t=2. Les effets sont robustes (seed-wise, bootstrap blocs 2×2×2), stables temporellement (t=0→2), et non réductibles à ‖∇m‖. Le contrôle négatif (K phase-scramblé) annule le gain. Les signes des coefficients (Ridge/OLS OOS) sont physiques : K<0 ; m, m^2>0. La marge intérieure Regge ≥2 stabilise les métriques.
+
+1) Ordre non linéaire (Pearson saturé).
+D améliore Spearman ρ, Kendall τ et C-index vs A, y compris quand Pearson ~1.
+Tables: “One-pager___L_18_ROI_8_3___A_vs_D__moy___IC95_.csv”, “M_triques__tendues_par_seed___A_vs_D_t_0__L_18__ROI_8_3_.csv”, “R_sum_____moyennes___IC95____A_D_t_0.csv”, “PRC_onepager_consolidated.csv”.
+
+2) Échelle & calibration.
+relRMSE baisse et la fiabilité déciles suit y=x (α≈0, β≈1) à t=0 et t=2.
+Tables/Figures: “Calibration_T__________T__TEST_concat__seeds_.csv”, “Calibration_T__________T___t_2__rapide_.csv”, figures “output.png” (t=0) et “output.png (Fiabilité — t=2)”.
+
+3) Ablation (‖∇m‖ vs K̃).
+A+K̃ > A+‖∇m‖ ; A+‖∇m‖+K̃ ≈ meilleur ⇒ K̃ n’est pas la pente.
+Tables: “Ablation___m_vs___m__vs_K___moyennes___IC95_.csv”, “A___m__vs_A___m__K____seed-wise___t_2.csv”.
+
+4) Robustesse spatiale (Bootstrap 2×2×2).
+Les IC95 des Δ (C-index, relRMSE) excluent 0.
+Table: “Bootstrap_blocs__2x2x2____t_2___A___m__vs_A___m__K_____MSE__Cidx__moy___IC95_.csv”.
+
+5) Indépendance (corrélations partielles).
+r(T,K | m,m^2) > 0 à t=0 et t=2 pour K̃ et K_Regge ⇒ signal propre.
+Tables: “Partielle_r_T__K____m____m_____TEST___t_0.csv”, “Partielle_r_T__K_Regge___m____m_____TEST___t_0.csv”, “Partielle_r_T__K____m____m_____TEST___t_2.csv”, “Partielle_r_T__K_Regge___m____m_____TEST___t_2.csv”, “PRC_annex3_summary.csv”.
+
+6) Stabilité temporelle & back-reaction.
+Les Δ (C-index, relRMSE) restent favorables jusqu’à t=2 (IC95 serrés).
+Tables: “Back-reaction___t_0__rapide____m_triques_seed-wise.csv”, “Back-reaction___t_1__rapide____m_triques_seed-wise.csv”, “Back-reaction___r_sum_____moy___IC95__pour_t_0__2.csv”, “Stabilit__temporelle____relRMSE____C-index___t_0_1_2__moy___IC95_.csv”, “PRC_backreaction_consolidated.csv”.
+
+7) Régime Regge (marge intérieure).
+Marge ≥2 stabilise le gain, marge 0 bruitée.
+Tables: “Effet_marge_int_rieure__Regge_Lc_10_____relRMSE_mean.csv”, “Effet_marge__Regge_Lc_10____t_2____relRMSE__C-index_vs_A.csv”.
+
+8) Pont “Einstein discret” (OLS OOS) & colinéarité.
+Signes OK (K<0 ; m, m^2>0), OOS stables ; VIF moyen modéré, VIF max acceptable.
+Tables: “Pont__Einstein_discret____OLS_OOS__rapide____K_Regge__brut____m____m__2___m.csv”, “VIF__TRAIN____t_2____K___Kreg____m___m_.csv”, “Ridge_path___signes_des_coefficients___t_2.csv”.
+
+9) Contrôle négatif (phase-scramble de K).
+Δ ≈ 0 vs A : le gain disparaît → K porte bien le signal.
+Tables: “Contr_le_n_gatif___K__phase-scrambled_____vs_A___m___t_2_.csv”, “PRC_control_negative_summary.csv”.
+
+10) Note d’unité (Regge).
+K = δ_e · ℓ_e / A_e (unité 1/longueur). Figure: “output (1).png”.
+
+Fichiers consolidés produits ici pour citation rapide : 
+- PRC_onepager_consolidated.csv
+- PRC_backreaction_consolidated.csv
+- PRC_annex3_summary.csv
+- PRC_control_negative_summary.csv
+- PRC_annex4_summary.csv

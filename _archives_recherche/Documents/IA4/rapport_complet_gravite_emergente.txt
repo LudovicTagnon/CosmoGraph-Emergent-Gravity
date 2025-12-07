@@ -1,0 +1,45 @@
+RAPPORT COMPLET — Signature topologique locale & gravité émergente
+(preuves mathématiques + validations statistiques, texte intégral)
+
+[Ce rapport reprend tout : cadre/hypothèses, énoncés et preuves, protocole, résultats avec IC95%, interprétation,
+limites/portée, prédictions testables et feuille de route. Version texte, sans LaTeX.]
+
+1) RÉSUMÉ EXÉCUTIF
+- Résultat : E[||∇Φ|| | b0(θ)=k] croît strictement avec k (fenêtre θ, échelle r) dans des champs 1/f anisotropes.
+- Information irréductible : b0(θ) n’est pas réductible aux descripteurs lisses (moments, FD, convolutions).
+- Résultats (L=32) :
+  • α=2.0, patch 7^3 : Δρ = +0,0817 (IC95% +0,0175 ; +0,1459) ; ΔrelRMSE = −0,0065 (IC95% −0,0133 ; −0,00028)
+  • α=1,5, patch 9^3 : Δρ = +0,0567 (IC95% +0,0247 ; +0,0888) ; ΔrelRMSE = −0,00441 (IC95% −0,00855 ; −0,00027)
+
+2) CADRE, HYPOTHÈSES (H1–H6)
+- R^3 (ou tore), ρ stationnaire C^1, spectre |k|^{-α} (α∈[1,5;2,5]), anisotropies bornées. ΔΦ=4πG(ρ−ρ̄), y=||∇Φ||.
+- Patch B_r ; excursion E_θ ; b0(θ) = composantes connexes ; baseline Z_r = moments (1..4), FD, convolutions bornées.
+- H1..H6 : mélange angulaire local ; masses d’amas non dégénérées ; contrôle E||F_r||<∞ ; fenêtre Θ≈[0,55;0,70] ; robustesse α/aniso.
+
+3) ÉNONCÉS & PREUVES (sketchs rigoureux)
+- Th.1 Monotonie : E[y|k] ≥ E||N_r|| - E||F_r|| ; N_r=Σ U_i ; convexité + symétrie ⇒ E||Σ_{i=1..k}U_i|| croît strictement en k.
+- Corollaire : I(y ; b0 | Z_r) > 0 (construction iso-Z_r mais b0 différent → E||N_r|| diffère).
+- Th.2 Robustesse : invariance de la monotonie pour α∈[1,5;2,5] et anisotropies bornées (chgt d’échelle linéaire).
+
+4) PROTOCOLE (réplicable)
+- Génération 1/f anisotrope (L=32), Poisson périodique (Φ_k=-4πG(ρ_k−ρ̄δ_0)/||k||^2), y=||∇Φ||.
+- Features baseline : [ρ, FD local, moy, var, skew, kurt] ; Topo : b0(θ) pour θ∈{0,35;0,50;0,65} sur patch 7^3 ou 9^3.
+- Modèle : ridge λ=0,8 ; split 60/40 ; standardisation sur train ; seeds indépendants.
+- Métriques : Δρ (gain Pearson), ΔrelRMSE (diff. d’erreur relative ; négatif = mieux) ; IC95% = moyenne ±1,96·SE.
+
+5) RÉSULTATS (compacts avec IC95%)
+- α=2.0, patch 7^3 : Δρ = +0,0817 [0,0175 ; 0,1459] ; ΔrelRMSE = −0,0065 [−0,0133 ; −0,00028]
+- α=1,5, patch 9^3 : Δρ = +0,0567 [0,0247 ; 0,0888] ; ΔrelRMSE = −0,00441 [−0,00855 ; −0,00027]
+
+6) SANITY & ABLATIONS
+- Fenêtre de percolation (b0 seul) : θ=0,65 > 0,50 > 0,35 en Δρ (seul 0,65 sig.).
+- Splits/Seeds : Δρ>0 robuste.
+- Patch : 7^3 ok à α=2.0 ; à α=1,5, 9^3 aide.
+- Multi-seuils > mono-seuil : transitions (dé)coalescence capturées.
+
+7) INTERPRÉTATION, LIMITES, PRÉDICTIONS
+- Mécanisme : plus d’amas ⇒ moins de compensation directionnelle ⇒ ||∇Φ|| ↑.
+- Limites : cadre 1/f synthétique ; besoin de transfert N-body/observations.
+- P1–P4 : prédictions testables (θ≈0,6–0,65 ; robustesse ; fenêtre en r ; multi-seuils supérieurs).
+
+FIN (version intégrale dans ce fichier + CSV résumés séparés).

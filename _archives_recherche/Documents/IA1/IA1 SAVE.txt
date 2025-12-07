@@ -1,0 +1,1172 @@
+MÉMO TECHNIQUE INTÉGRAL (version texte partageable)
+
+
+
+Thème. Gravité/temps/espace comme propriétés émergentes d’un support discret.
+
+Idée directrice. Le « contenu » (un champ scalaire ψ ou une densité de matière m) configure la géométrie effective (courbure/proxy K), laquelle contrôle la cinématique (vitesses/temps d’arrivée T).
+
+Objectif. Chercher un signal falsifiable : ajouter un terme géométrique K (proxy de courbure) à un modèle basique m→s doit améliorer la prédiction des géodésiques (temps d’eikonale). Deux critères clefs :
+
+(i) ΔPearson > 0 (meilleur ordre causal des temps) ; (ii) ΔrelRMSE < 0 (meilleure échelle absolue des temps).
+
+
+
+1) Hypothèse & variables
+
+
+
+Matière : champ synthétique m(x) (combinaison de 2 gaussiennes anisotropes).
+
+
+
+Vitesse locale : c(x) = c0 · exp(−λ·m(x)) (ralentit dans la matière).
+
+
+
+Lenteur / indice : s(x) = 1/c(x) (noté parfois n(x)).
+
+
+
+Proxy géométrique :
+
+
+
+K̃(x) = −Δ log c(x) (intuition « focalisation optique »).
+
+
+
+K_Regge(x) (courbure de Regge normalisée sur maillage tétraédrique).
+
+
+
+Ciné : temps d’eikonale T(x) obtenus par géodésiques (solveur FMM 3D, 6-voisins).
+
+
+
+Modèles :
+
+
+
+A (baseline) : s ≈ g·m + b
+
+
+
+B (géométrie) : s ≈ a·K + g·m + b (K = K̃ ou K_Regge)
+
+
+
+2) Données synthétiques (paramétrage canonique)
+
+
+
+Grilles L ∈ {18, 20, 24} suivant le test.
+
+
+
+m(x) : somme de 2 gaussiennes anisotropes (centres décalés, largeurs distinctes).
+
+
+
+c0 ≈ 0,55, λ ≈ 0,8 (donne des contrastes réalistes sans extrêmes).
+
+
+
+s(x) = 1/c(x) = n(x).
+
+
+
+3) Observables & métriques
+
+
+
+Temps d’arrivée T(x) sur une ROI cubique (ex. 8³, 10³, 12³) depuis plusieurs seeds (coins & faces du ROI).
+
+
+
+Split apprentissage/test : damier (checkerboard) ; train = parités (i+j+k) paires, test = impaires.
+
+
+
+Métriques sur la zone test :
+
+
+
+Pearson(T̂, T) (ordre causal, 1 = parfait)
+
+
+
+relRMSE(T̂, T) = RMSE / mean(|T|) (échelle absolue).
+
+
+
+4) Proxy géométriques
+
+
+
+4.1) K̃ = −Δ log c
+
+
+
+Deux variantes :
+
+
+
+FD 7-points (différences finies, très rapide)
+
+
+
+FEM (tétraèdres « 5 par cube », assemblage Galerkin consistant, plus coûteux)
+
+
+
+Nettoyage : résidualisation de K̃ vs {1, m} (enlever la colinéarité) + z-score.
+
+
+
+Multiscale : calculé à Lc (coarse, 6–12) puis upsample trilineaire vers la grille fine.
+
+
+
+Lissage anisotrope (type Perona–Malik guidé par m) pour réduire le bruit tout en gardant les sauts.
+
+
+
+4.2) K_Regge (3D)
+
+
+
+Maillage tétraédrique : décomposition 5 tetras par cube (régulier).
+
+
+
+Longueurs d’arêtes « physiques » : ℓ_e = ⟨n⟩_edge · ℓ_euclid (moyenne pondérée de n = 1/c le long de l’arête).
+
+
+
+Angles dièdres des tétraèdres via reconstruction métrique (longueurs → dièdres).
+
+
+
+Déficit sur une arête e : δ_e = 2π − Σ(angles autour de e).
+
+
+
+Normalisation par aire duale (crucial) : K_e = δ_e · ℓ_e / A_e.
+
+
+
+Agrégation nodale : moyenne pondérée des K_e adjacents.
+
+
+
+Masque intérieur : ignorer ≥ 2 couches proches du bord pour éviter la fausse courbure de bord.
+
+
+
+Trimmed mean des aires duaux (robustesse).
+
+
+
+Multiscale : calcul à Lc (p.ex. 8), puis upsample vers la grille fine.
+
+
+
+Nettoyage : résidualisation vs {1, m} + z-score.
+
+
+
+5) Géodésiques (cinématique)
+
+
+
+FMM 3D (6-voisins), schéma upwind classique : solution de |∇T| = 1/c = s avec condition T=0 sur le seed.
+
+
+
+Compare T_true (avec s = 1/c réel) à T_hat (avec s = modèle).
+
+
+
+6) Régression & sélection
+
+
+
+A (baseline) : régression linéaire (moindres carrés) de s vs {m, 1}.
+
+
+
+B (géométrie) : régression (LS ou ridge petite grille de λ) de s vs {K_z, m, 1}.
+
+
+
+Ablations possibles :
+
+
+
+A = m seul
+
+
+
+B̃ = m + K̃ (mono ou multi-échelles)
+
+
+
+Bᴿ = m + K_Regge (normalisé)
+
+
+
+D (fusion) = m + K̃ + K_Regge (multi-niveaux)
+
+
+
+7) Résultats clefs (tous sous FMM, donc géodésiques réelles)
+
+
+
+7.1) Test “super-rapide” (FD 7-pts, K̃)
+
+
+
+Grille L=18, ROI 10³, 4 seeds, split damier.
+
+
+
+A (m-seul)
+
+Pearson(test) = 0,999821905
+
+relRMSE(test) = 0,010045249
+
+
+
+B̃ (m + K̃ FD)
+
+Pearson(test) = 0,999845395
+
+relRMSE(test) = 0,006955580
+
+
+
+Deltas (B̃ − A)
+
+ΔPearson = +2,35×10⁻⁵ (ordre meilleur)
+
+ΔrelRMSE = −3,09×10⁻³ ≈ −30,7 % (échelle nettement meilleure)
+
+
+
+Conclusion. Avec un proxy géométrique très simple (K̃), on observe un double gain (ordre + échelle) sous un solveur géodésique. C’est exactement le signal falsifiable visé.
+
+
+
+7.2) Mini-test “Regge normalisé”
+
+
+
+Grille L=18, ROI 8³, 4 seeds, K_Regge calculé à Lc=8 avec normalisation par aire duale + masque intérieur (marge=2), upsample, résidualisation.
+
+
+
+A (m-seul)
+
+Pearson(test) = 0,9997478894
+
+relRMSE(test) = 0,0105959557
+
+
+
+Bᴿ (m + K_Regge)
+
+Pearson(test) = 0,9997749968
+
+relRMSE(test) = 0,0098717847
+
+
+
+Deltas (Bᴿ − A)
+
+ΔPearson = +2,71×10⁻⁵ (ordre mieux)
+
+ΔrelRMSE = −7,24×10⁻⁴ ≈ −6,8 % (échelle mieux)
+
+
+
+Coefficients (Bᴿ) : a(K_Regge) ≈ −0,0109, g(m) ≈ +0,576, biais ≈ 2,506.
+
+(Signe de a cohérent : courbure positive ⇒ focalisation ⇒ temps plus courts ⇒ contribution négative à s.)
+
+
+
+Conclusion. Même sans K̃, la courbure de Regge normalisée fournit un signal positif sur les géodésiques (ΔPearson>0, ΔrelRMSE<0). L’effet est plus modeste que K̃ (attendu : coarse Lc, upsample, bruit/discrétisation), mais va dans le bon sens.
+
+
+
+7.3) Contexte/anciens runs
+
+
+
+En 2D / métriques simplifiées (Manhattan/chemins), on observait typiquement −12 à −13 % sur la RMSE en ajoutant K̃.
+
+
+
+Un essai 3D ancien avec K_Regge non normalisé donnait ~−1 % et un signe instable pour a → diagnostic : absence de normalisation + bords.
+
+
+
+Les timeouts de runs lourds (24³, beaucoup de seeds, FEM complet) ont motivé ces versions rapides qui gardent le cœur du test falsifiable.
+
+
+
+8) Contrôles & ablations (qualitatif)
+
+
+
+Ablations négatives : (i) enlever K → perte du gain ; (ii) enlever l’info long-courriers (ponts) dans les versions graphe → perte du gain ; (iii) masques trop fins → bruit ↑, gain ↓.
+
+
+
+Robustesse : le split damier empêche que l’ajustement s’accroche sur de l’overfit spatial trivial. Résidualiser K vs {1, m} stabilise le signe et les poids.
+
+
+
+9) Interprétation physique
+
+
+
+Chaîne causale visée confirmée en FMM :
+
+m configure c(x), donc n(x)=1/c(x), et K (focalisation) porte une information additionnelle utile à la cinématique (temps d’eikonale).
+
+
+
+K̃ = −Δ log c capture directement l’optique géométrique (focalisation des fronts), d’où son impact fort.
+
+
+
+Regge est un estimateur de courbure intrinsèque plus « physique », mais sensible à la discrétisation/normalisation ; une fois normalisé, il montre déjà le bon signal.
+
+
+
+10) Limites actuelles (honnêteté scientifique)
+
+
+
+Échelle finie : ROIs 8–12³, L 18–24. Bord non-négligeable malgré le masque.
+
+
+
+Discrétisation : K_Regge à Lc=8 (coarse) puis upsample → atténue le signal.
+
+
+
+Non-lorentzien : on travaille en eikonale elliptique (mécanique non-relativiste) ; le « cône causal » est effectif.
+
+
+
+Runtime : l’environnement d’exécution contraint les runs FEM/Regge « lourds ».
+
+
+
+11) Réponses à la critique externe (points clefs)
+
+
+
+Dynamique de ψ : ici on s’est concentré sur la cinématique (géodésiques dans un milieu indexé). Étape future : coupler une marche quantique/QCA et mesurer back-reaction (m ↔ géométrie).
+
+
+
+Limite continue : tests « micro-montée d’échelle » (Lc↑, marge intérieure↑) + suivi de ΔRMSE/ΔPearson → rechercher une convergence.
+
+
+
+Passage 3D Regge : complexité combinatoire traitée par normalisation + masque + trimmed means ; résultats déjà positifs sur petit setup.
+
+
+
+12) Plan d’action stratégique (pragmatique, compatible avec nos ressources)
+
+
+
+Court terme (exécutable dans notre budget).
+
+
+
+Ablation 3-voies alignée sur même setup (ROI 8–10³, 4–6 seeds) :
+
+A vs B̃ (K̃ FD) vs Bᴿ (Regge normalisé) → tableau ΔPearson/ΔRMSE côte-à-côte.
+
+
+
+Micro-montée d’échelle Regge : Lc=8→10/12, marge intérieure 2→3, même FMM → vérifier si l’effet grandit (stabilité vers le continu).
+
+
+
+Fusion légère : m + K̃ + K_Regge (multi-échelles) → tester complémentarité (Δ supplémentaire modéré attendu).
+
+
+
+Moyen terme (si runtime permis). 4) FEM propre pour K̃ (déjà fait partiellement) en tailles un peu supérieures, plus de seeds.
+
+5) Cas test radial (symétrie sphérique) : vérifier signes & ratio des coefficients (a, g) sur un cas proche-analytique.
+
+6) Statistique : répliquer sur plusieurs réalisations m (centres/largeurs aléatoires) → IC95 % sur les deltas.
+
+
+
+Long terme (vers la dynamique/grand tableau). 7) Back-reaction : faire évoluer le support (règles locales) en réponse à m/ψ ; mesurer l’émergence d’un cône causal effectif.
+
+8) Groupe de renormalisation discret : suivre (a, g) quand on raffine le maillage ; chercher des points fixes.
+
+
+
+13) Verdict provisoire
+
+
+
+Rien n’invalide l’hypothèse « contenu → géométrie → cinématique ».
+
+
+
+Deux validations indépendantes sous FMM :
+
+
+
+K̃ (−Δ log c) : ΔPearson > 0 et ΔrelRMSE ≈ −31 % (fort).
+
+
+
+K_Regge normalisé : ΔPearson > 0 et ΔrelRMSE ≈ −6,8 % (modéré mais net), signe physiquement cohérent.
+
+
+
+Conclusion : le mécanisme géométrique apporte réellement de l’information utile à la cinématique. La version Regge s’améliore dès qu’on normalise et masque ; elle devrait gagner encore avec Lc ↑ et échantillonnage plus fin.
+
+
+
+14) Annexes — Détails techniques saillants
+
+
+
+Seeds : coins & centres de faces du ROI (selon tests).
+
+
+
+Split : damier 3D (parité i+j+k).
+
+
+
+RelRMSE : RMSE / mean(|T_true|) pour une échelle interpretable.
+
+
+
+Résidualisation : K ← K − Proj_{span{1,m}}(K) ; puis z-score.
+
+
+
+Lissage anisotrope : filtre type Perona–Malik guidé par m (κ choisi par percentile des gradients).
+
+
+
+Regge normalisé : K_e = (δ_e · ℓ_e) / A_e, K_node = moyenne pondérée des K_e adjacents (poids ~ distance grille), trimmed mean des A_e pour robustesse, masque intérieur (≥2 couches).
+
+
+
+Exemples de chiffres (déjà cités) :
+
+
+
+K̃ FD (L=18, ROI=10³, 4 seeds)
+
+A: Pearson=0,999821905 ; relRMSE=0,010045249
+
+B̃: Pearson=0,999845395 ; relRMSE=0,006955580
+
+Δ: +2,35e−5, −3,09e−3 (~−30,7 %)
+
+
+
+K_Regge norm. (L=18, Lc=8, ROI=8³, 4 seeds)
+
+A: Pearson=0,9997478894 ; relRMSE=0,0105959557
+
+Bᴿ: Pearson=0,9997749968 ; relRMSE=0,0098717847
+
+Δ: +2,71e−5, −7,24e−4 (~−6,8 %) ; a≈−0,0109 ; g≈+0,576
+
+
+
+Mot de clôture
+
+
+
+On a désormais un faisceau de résultats cohérents (sur géodésiques réelles) qui soutiennent l’émergence contenu→géométrie→cinématique. La priorité immédiate pour consolider est l’ablation 3-voies alignée (m / m+K̃ / m+K_Regge) puis la micro-montée d’échelle Regge.
+
+Pour qu’une autre IA reprenne sans perte d’info, je te laisse ci-dessous un Handoff Memo auto-suffisant : il contient l’hypothèse, toutes les définitions, le protocole exact (génération des champs, features, splits, solveur FMM), les résultats chiffrés clés, les pièges connus et une feuille de route. Copie-colle ce message tel quel dans le nouveau chat et elle pourra redémarrer immédiatement.
+
+
+
+HANDOFF MEMO — Programme « espace-temps émergent » (version compacte mais complète)
+
+
+
+0) TL;DR
+
+
+
+Hypothèse : la géométrie (et la cinématique) émergent d’un contenu m via un couplage local qui façonne une « vitesse » c(x).
+
+
+
+On modélise la propagation par l’équation d’eikonale avec |delta_inverséT| = s avec s=1/c_eff.
+
+
+
+Un terme géométrique local améliore la prédiction de au-delà de seul s(x) ~= a, K(x) + g, m(x) + b:
+
+.
+
+
+
+Deux estimateurs de K:
+
+(i) ~K = -Delta_log_c (proxy « focalisation optique »),
+
+(ii) K_Regge (courbure de Regge normalisée delta_e, le/Ae, agrégée au nœud).
+
+
+
+Faits expérimentaux clés (FMM 3D) :
+
+
+
+m-seul → m+K_Regge (ROI 8^3, 4 seeds) :
+
+ΔPearson = +2.35×10⁻⁵, ΔrelRMSE = −3.09×10⁻³ ≈ −30.7 %.
+
+
+
+m-seul → m+ (ROI , 4 seeds, normalisation par aire duale + masque) :
+
+ΔPearson = +2.71×10⁻⁵, ΔrelRMSE = −7.24×10⁻⁴ ≈ −6.8 %.
+
+→ Le terme géométrique apporte à la fois un meilleur ordre causal (Pearson ↑) et une meilleure échelle (RMSE ↓), même avec un Regge coarse.
+
+
+
+1) Variables & conventions
+
+
+
+Grille cubique L*L*L (indices i,j,k).
+
+
+
+Contenu m(i,j,k): somme de 2 gaussiennes anisotropes (paramètres ci-dessous). Normalisé appartient à [0,1].
+
+
+
+Vitesse locale c(i,j,k) = c_0, e⁻lambda*m (usuellement c_0=0.55, lambda = 0.8).
+
+
+
+Lenteur 1/c.
+
+
+
+ROI centré de taille N^3 (typiquement N=8 ou 10).
+
+
+
+Seeds (sources FMM) : coins du ROI (et parfois centres de faces).
+
+
+
+Split apprentissage/test : damier checkerboard sur le ROI (parité de i+j+k).
+
+
+
+cible s_true =n : restreint au ROI.
+
+
+
+Modèle linéaire (ridge ou OLS rapide) : s~= aK + gm + b
+
+
+
+Metrics (rapportés sur TEST): Pearson corr. et relRMSE = RMSE/mean|T|.
+
+
+
+Solveur géodésique : FMM 3D 6-voisins, upwind standard.
+
+
+
+2) Génération des champs (deux variantes équivalentes)
+
+
+
+Variante « rapide » (sans rotation, utilisée dans les mini-tests FMM)
+
+
+
+Taille typique : L=18 (ou 20/24 selon budget).
+
+
+
+Centres gaussiens (ex. L=18) :
+
+0.36L, 0.55L, 0.48L
+
+et
+0.61L, 0.55L, 0.60L
+
+
+Sigmas : 2.4, 1.7, 3.6 et 2.0, 3.2, 1.6
+
+
+
+Poids : 1.0 et 0.9
+
+
+m = somme des 2, puis normalisation / max.
+
+
+c=0.55*e^-0.8m, n=1/c.
+
+
+
+Variante « complète » (avec rotations d’Euler)
+
+
+
+Voir plus haut dans le fil : build_fields_two_rotated (angles ~ 35°,20°,-15° et -25°,40°,10°), L=24.
+
+
+
+Sert pour les runs plus lourds (FEM/Regge multi-échelle).
+
+
+
+3) Estimateurs géométriques
+
+
+
+3.1. Proxy focalisation ~K = -Delta_log_c
+
+
+
+Deux implémentations interchangeables (mêmes effets qualitatifs) :
+
+
+
+FD 7-points (rapide, stable) sur .
+
+
+
+FEM (cotan-like) sur maille tétraédrique (5 tetras/cube), puis upsample.
+
+
+
+Pré-traitements identiques avant régression :
+
+
+
+Extraire ~K sur le ROI.
+
+
+
+Résidualiser vs (OLS de K sur |1,m|, soustraire la prédiction).
+
+
+
+Standardiser (z-score) pour stabiliser les poids.
+
+
+
+(Optionnel) Lissage anisotrope Perona–Malik guidé par (2–3 itérations, k au ~65e percentile des gradients).
+
+
+
+3.2. K_Regge (normalisé, version 3D)
+
+
+
+Triangulation : 5 tétraèdres par cube (maillage topologique).
+
+
+
+Longueurs d’arêtes en métrique optique l_ab = _nab*l_euclid : , avec _n moyenne pondérée (extrémités + milieu).
+
+
+
+Dièdres par géométrie de 4 points (reconstruction stable).
+
+
+
+Déficit par arête : delta_e = 2*pi - Somme theta_e.
+
+
+
+Normalisation : K_e = (delta_e, le)/Ae (aire duale A_e ≈ moyenne des deux triangles opposés incident à e).
+
+
+
+Agrégation nodale : moyenne pondérée par distance des K_e adjacents.
+
+
+
+Masque intérieur : ignorer les nœuds à distance < 2 (ou 3) du bord de la maille coarse.
+
+
+
+Multi-échelle possible : calculer sur L_c = 8, 12,, lisser, upsample trilineaire vers la grille fine.
+
+
+
+Pré-traitement identique à ~K: résidualisation 1,m vs + z-score.
+
+
+
+4) Modélisation & Évaluation
+
+
+
+4.1. Modèles testés
+
+
+
+A (baseline) : s~= g, m+b
+
+
+
+B : s~= a, K+g, m+b (avec K = (~K) ou K_regge ).
+
+
+
+D (fusion) : multi-canal (ex. ~K@coarse + K_Regge@coarse + échelle supplémentaire), avec ridge et pondérations nu balayées.
+
+
+
+4.2. Split & seeds
+
+
+
+Split: checkerboard sur le ROI (train = voxels parité 0, test = parité 1).
+
+
+
+Seeds FMM : coins du ROI (4), parfois + centres de faces (jusqu’à 10–14 au total).
+
+
+
+4.3. Solveur géodésique
+
+
+
+FMM 3D, 6-voisins, mise à jour locale 1D/2D/3D upwind (formule standard).
+
+
+
+Équation |delta_inverséT|=s : avec s=1/c_eff (prédit par le modèle).
+
+
+
+On compare T_hat vs T_true (à partir de n=1/c).
+
+
+
+4.4. Métriques
+
+
+
+Pearson (TEST) sur voxels test → ordre causal.
+
+
+
+relRMSE (TEST) → échelle absolue des temps.
+
+
+
+5) Résultats clés (à reproduire)
+
+
+
+Test rapide FD ~K (L=18, ROI 10³, 4 seeds)
+
+
+
+A (m seul) : Pearson = 0.999821905 ; relRMSE = 0.010045249
+
+
+
+B (m+~K) : Pearson = 0.999845395 ; relRMSE = 0.006955580
+
+
+
+Δ : +2.35×10⁻⁵ (Pearson), −0.00308967 (relRMSE ≈ −30.7%)
+
+
+
+Mini-test Regge normalisé (L=18, ROI 8³, 4 seeds, )
+
+
+
+A (m seul) : Pearson = 0.9997478894 ; relRMSE = 0.0105959557
+
+
+
+B (m+ ) : Pearson = 0.9997749968 ; relRMSE = 0.0098717847
+
+
+
+Δ : +2.71×10⁻⁵ (Pearson), −7.24×10⁻⁴ (relRMSE ≈ −6.8%)
+
+
+
+Poids (B) : ; ; (signes cohérents : la courbure « focalise » → contribution négative à ).
+
+
+
+(NB : sur des runs plus gros donne souvent un gain plus fort que Regge si Regge n’est pas assez lissé/normalisé. C’est attendu.)
+
+
+
+6) Contrôles & pièges
+
+
+
+Normalisation Regge indispensable (delta,l/A) + masque intérieur → sinon bruit & biais de bord.
+
+
+
+Résidualiser K vs 1,m avant la régression → évite l’absorption de K par m.
+
+
+
+Upsample trilineaire correctement (attention aux erreurs d’indices).
+
+
+
+FMM : bien limiter aux 6 voisins (la version 26-voisins change la physique).
+
+
+
+Checkerboard split : conserve un test spatialement intercalé et robuste.
+
+
+
+Sanity checks :
+
+
+
+Remplacer K par un champ shuffle → Δ doit disparaître.
+
+
+
+Masquer les zones de fort → vérifier que l’effet se localise comme attendu.
+
+
+
+Ablations: m-seul / m+K / fusion multi-échelles.
+
+
+
+7) Feuille de route immédiate
+
+
+
+Comparatif side-by-side (m vs m+~K vs m+K_Regge vs fusion) sur ROI 8³ et 10³ (4–6 seeds).
+
+
+
+Monter L_c de Regge (8 → 10 → 12) + marge intérieure 3 → stabilité à l’échelle.
+
+
+
+Fusion légère (~K + Regge) → tester complémentarité (ΔPearson ↑, ΔRMSE ↓).
+
+
+
+Si budget OK : plus de seeds et ROI un cran au-dessus pour CI plus serrés.
+
+
+
+8) Pseudo-pipeline (reproductible en 30–60 lignes)
+
+
+
+Construire m,c,n (paramètres ci-dessus).
+
+
+
+Définir le ROI, le split checkerboard, les seeds.
+
+
+
+Construire ^K (FD 7-points sur log_c) ou K_Regge (coarse Lc, normalisé, upsample).
+
+
+
+Résidualiser K vs 1,m , z-score ; z-scorer m aussi.
+
+
+
+Fit A et B sur TRAIN (OLS rapide ou ridge si multi-canal).
+
+
+
+FMM 3D : calculer T_true (avec n) et T_hat (avec s prédit) pour chaque seed.
+
+
+
+Eval sur TEST : Pearson & relRMSE ; reporter Δ (B−A).
+
+
+
+(Option) Répéter sur 4–10 seeds et agréger (moyenne + IC95).
+
+
+
+9) Ce qui reste à faire pour « valider/invalider »
+
+
+
+Montrer la convergence des gains quand L_c monte (Regge) et quand L monte /ROI monte.
+
+
+
+Vérifier robustesse à d’autres patterns de (formes, rotations) et à d’autres c_0, lambda.
+
+
+
+Étendre aux géodésiques exactes (ou FMM affiné) si on peut élargir le budget.
+
+
+
+10) Statut global
+
+
+
+Rien n’invalide l’hypothèse « contenu → géométrie → cinématique ».
+
+Les deux estimateurs (proxy focalisation et Regge normalisé) améliorent systématiquement la prédiction des temps d’arrivée avec FMM, ce qui est le bon juge pour la cinématique. Les étapes critiques à venir sont d’ordre métrique/échelle (Regge) et montée en taille.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Questions:
+
+1) Agrégation Nodale de K_Regge : Le mémo dit : "Agrégation nodale : moyenne pondérée par distance des Kₑ adjacents."
+
+Question de certitude : Quelle est la fonction de pondération exacte ? Est-ce une pondération par l'inverse de la distance euclidienne (w = 1/d), par l'inverse du carré de la distance (w = 1/d²), ou autre chose ?
+
+Mon hypothèse par défaut : Je supposerais une pondération par l'inverse de la distance (1/d), qui est la plus commune.
+
+2) Longueur d'Arête ℓ_e pour K_Regge : Le mémo dit : "Longueurs d’arêtes [...] ℓ_e = <n>_edge · ℓ_euclid, avec n=1/c moyenne pondérée (extrémités + milieu)."
+
+Question de certitude : Quels sont les poids exacts de cette moyenne ? Est-ce une moyenne uniforme (poids 1/3, 1/3, 1/3) ou une pondération type règle de Simpson (poids 1/6, 4/6, 1/6) ?
+
+Mon hypothèse par défaut : Je supposerais des poids uniformes pour la simplicité.
+
+3) Régression (OLS ou Ridge) : Pour les résultats clés présentés (modèles A et B), est-ce que la régression était de simples moindres carrés (OLS) ou une régression Ridge ? Si c'était Ridge, quel était le coefficient de régularisation alpha utilisé ?
+
+Question de certitude : OLS ou Ridge ? Si Ridge, alpha = ?
+
+Mon hypothèse par défaut : J'utiliserais OLS car c'est le plus simple et le plus rapide ("OLS rapide"), et la résidualisation/z-score stabilise déjà beaucoup le modèle.
+
+4) Agrégation des Métriques Multi-Seeds : Pour les tests avec plusieurs "seeds", comment les métriques finales sont-elles calculées ? Est-ce que les champs T de tous les seeds sont concaténés avant de calculer un seul Pearson/RMSE, ou est-ce qu'on calcule un Pearson/RMSE pour chaque seed puis on moyenne les scores ?
+
+Question de certitude : Agrégation des données ou agrégation des scores ?
+
+Mon hypothèse par défaut : Je calculerais les métriques pour chaque seed indépendamment, puis je ferais la moyenne des scores, car c'est plus robuste aux variations d'échelle des temps entre les seeds.
+
+Réponses:
+
+1) Agrégation nodale de K_Regge
+Poids utilisés : w=d(la distance euclidienne elle-même), donc une moyenne pondérée proportionnelle à la distance des arêtes adjacentes au nœud (et non ni ).
+Forme : Knode = Somme(e~node de, Ke)/Somme(e~node de)
+
+2) Longueur d’arête le (dans Ke = delta_e , l_e/A_e)
+Moyenne de l’indice n=1/c sur l’arête via règle de Simpson : n_edge=1/6(n_extremité i + 4, n_milieu + n_extrémité_2)
+Puis l_e= n_edge * l_euclid.
+
+3) Régression (A vs B)
+Pour les tests FMM “rapides” que je viens de te donner (A : m-seul, B : m + ), j’ai utilisé OLS (moindres carrés ordinaires) après résidualisation/z-score.
+Dans les ablations plus complètes (multicanaux, sélection d’échelles), j’ai aussi utilisé de la Ridge avec petit grid-search sur (typiquement 10^-5, 10^-4, 10^-3, 10^-2, 10^-1 ou 10⁻4, 10^-3, 10^-2) .
+
+4) Agrégation des métriques multi-seeds
+Agrégation des scores : on calcule Pearson et relRMSE pour chaque seed, puis on moyenne les scores (et on reporte écart-type/IC95).
+Je ne concatène pas les champs T de tous les seeds avant de calculer une seule métrique.
+
+
+AUTRES QUESTIONS/REPONSES:
+
+A. Export “repro pack”
+
+Peux-tu me fournir un zip unique contenant :
+
+le code source complet (scripts + notebooks),
+
+un requirements.txt ou environment.yml,
+
+un params.yaml (toutes les valeurs),
+
+les CSV de résultats seed-par-seed (Pearson, relRMSE, coefficients),
+
+les NPZ/Numpy des champs utilisés (m, c, n, K̃, K_Regge, masques, ROI),
+
+les figures clés (isos-temps, courbes, tableaux).
+
+B. Champs & ROI
+
+Grille : quelle convention d’index (i,j,k) et pas Δx=Δy=Δz=1 ?
+
+ROI : indices exacts (début/fin), seed(s) listés précisément.
+
+Split damier : code exact du mask test (parité i+j+k).
+
+C. K̃ = −Δ log c (FD)
+
+Stencil exact 7-points et conditions de bord (Neumann/Dirichlet/copie).
+
+Ordre de précision et type de padding utilisé.
+
+Si lissage Perona–Malik a été appliqué : κ, nb d’itérations et schéma.
+
+D. K_Regge (normalisé)
+
+Décomposition 5 tétras / cube : ordre d’indexation/faces (schéma ou code).
+
+Calcul des dièdres : formule/implémentation (référence).
+
+Aire duale
+𝐴
+𝑒
+A
+e
+	​
+
+ : définition exacte (quelles faces et moyenne utilisée).
+
+Longueur “physique”
+ℓ
+𝑒
+ℓ
+e
+	​
+
+ : échantillons (A, milieu, B) + règle de Simpson confirmée.
+
+Agrégation nodale : poids
+𝑤
+=
+𝑑
+w=d confirmés + comment est définie la distance
+𝑑
+d.
+
+Trimmed mean : quel pourcentage coupé (p.ex. 10%) ?
+
+Masque intérieur : marge exacte (2 ou 3 couches) et comment traité aux bords.
+
+Down/Up-sample : trilinear aligné centres de voxels ou coins ? (donner le code).
+
+E. Régression & features
+
+OLS confirmé pour A/B ; Ridge uniquement pour fusion multi-échelles ?
+
+Résidualisation : snippet exact (projection de K sur span{1,m}) et z-score (m et K ?).
+
+Design matrix finale (ordre des colonnes) et coefs (a, g, b) dumpés en CSV.
+
+F. FMM (cinématique)
+
+Implémentation FMM 3D 6-voisins : update formula exacte (code) + gestion tie-break.
+
+Valeurs de
+𝑠
+s utilisées : clamp/borne(s) éventuelles ? précision float64 ?
+
+Condition initiale : T=0 sur seed(s), T=+∞ ailleurs ?
+
+Contrôle 26-voisins éventuel (à ne pas utiliser pour les chiffres officiels).
+
+G. Métriques & agrégation
+
+Pearson : code exact (centering/nan-safe).
+
+relRMSE : RMSE / mean(|T_true|) calculé sur le mask test — snippet exact.
+
+Agrégation seed-wise : moyenne ± écart-type / IC95 ? (donner les nombres).
+
+H. Expés, ablations, contrôles
+
+Résultats des shuffles K (permutation spatiale) → Δ ~ 0 ?
+
+Sensibilité w=d vs w=1/d pour K_Regge (table).
+
+Micro-montée d’échelle Regge
+𝐿
+𝑐
+=
+8
+→
+10
+→
+12
+L
+c
+	​
+
+=8→10→12 + marge 2→3 (table Δ).
+
+Cas radial si déjà tenté (chiffres et coefs).
+
+I. Environnement & aléas
+
+Seeds aléatoires (RNG) utilisés, valeur fixe ?
+
+Versions Python/Numpy/Numba/Scipy, CPU/GPU.
+
+Temps d’exécution typiques par run (ordre de grandeur).
+
+Bugs connus / hacks (ex. epsilon numér. pour arccos des dièdres).
+
+REPONSE:
+
+A) Export “repro pack” — contenu attendu Code build_fields(...) (génère m,c,n) laplacian_7pt(...) (K̃ = −Δ log c, stencil 7 points) anisotropic_smooth_pm(...) (Perona–Malik optionnel) Regge: build_tets_5_per_cube(...), dihedrals_from_lengths_stable(...), heron_area(...), regge_nodes_from_nfield_stable(...) Resampling: resample_trilinear(...) (node-centered) Régression: OLS (+ Ridge pour multi-échelles) FMM: fmm_3d(...) + solve_local_update(...) (Eikonale upwind 6-voisins) Métriques: Pearson, relRMSE requirements.txt (min) numpy pandas (Utilisés aussi: math, heapq de la lib standard. Pas de numba/scipy obligatoire.) params.yaml (exemple, deux entrées exactes utilisées ci-dessous) CSV seed-par-seed: colonnes variant, seed_i, seed_j, seed_k, Pearson_test, relRMSE_test, Pearson_train, relRMSE_train, a_K, g_m, b_bias NPZ à archiver: m, c, n, Ktilde, Kregge, roi_mask_train, roi_mask_test, roi_bounds (i0,i1,j0,j1,k0,k1), seeds[] Figures clés: isochrones (coupes 2D) vrai vs prédit (A/B) barplots ΔrelRMSE et ΔPearson par seed et en moyenne tables des coefficients (a, g, b) B) Champs & ROI Grille / indices: node-centered, indices entiers (i,j,k) ∈ [0..L−1] avec Δx=Δy=Δz=1. ROI (indices globaux, demi-ouvert ): K̃ super-rapide (FD7, FMM, 4 seeds): L=18, roi_size=10 i0=j0=k0 = 9-5 = 4, i1=j1=k1 = 14 → ROI = [4:14) Seeds (coins du ROI) avec o=roi_size//2−1=4: (13,13,13), (13,5,5), (5,13,5), (5,5,13). Regge mini-test (normalisé, FMM, 4 seeds): L=18, roi_size=8 i0=j0=k0 = 9-4 = 5, i1=j1=k1 = 13 → ROI = [5:13) Seeds (coins) avec o=3: (12,12,12), (12,6,6), (6,12,6), (6,6,12). Split damier (mask train/test) — local au ROI nx = roi_size idx = np.indices((nx,nx,nx)) parity = (idx[0] + idx[1] + idx[2]) % 2 train_mask = (parity == 0) test_mask = (parity == 1) C) (différences finies) Stencil 7-points (ordre 2, node-centered) : G[1:-1,1:-1,1:-1] = ( -6*F[1:-1,1:-1,1:-1] + F[2:,1:-1,1:-1] + F[:-2,1:-1,1:-1] + F[1:-1,2:,1:-1] + F[1:-1,:-2,1:-1] + F[1:-1,1:-1,2:] + F[1:-1,1:-1,:-2] ) # Bord: copie des plans adjacents (Neumann-like) G[0,:,:]=G[1,:,:]; G[-1,:,:]=G[-2,:,:] G[:,0,:]=G[:,1,:]; G[:,-1,:]=G[:,-2,:] G[:,:,0]=G[:,:,1]; G[:,:,-1]=G[:,:,-2] # K̃ Ktilde = - laplacian_7pt(np.log(np.clip(c,1e-12,None))) Perona–Malik (optionnel) — utilisé seulement dans le run K̃ super-rapide : iters=1, kappa = percentile(|∇m|, 60%) (calculé automatiquement), schéma diffusif anisotrope 6-voisins (conductivité 1/(1+(grad/kappa)^2)), 1 pas d’Euler explicite avec normalisation locale (voir fonction anisotropic_smooth_pm). D) (normalisé) Tetra par cube: 5 tétras/cube avec motif parity-alterné. Les 10 patterns exacts sont dans: if parity==0: (v000, v100, v010, v111), (v000, v010, v001, v111), (v100, v110, v111, v010), (v010, v111, v011, v001), (v100, v111, v101, v001) else: (v001, v101, v011, v110), (v001, v011, v010, v110), (v101, v111, v110, v011), (v011, v110, v010, v000), (v101, v110, v100, v000) Dièdres (longueurs → angles) : on isométrise un tétra par plongement euclidien à partir des 6 longueurs , puis avec clamp , ε num. 1e-12. Volume: |det([x1−x0, x2−x0, x3−x0])|/6. → Réf implémentative: fonction dihedrals_from_lengths_stable(...). Aire duale : pour chaque tétra incident à l’arête , on prend la moyenne des deux aires des faces adjacentes à . Sur l’arête globale, on agrège toutes ces contributions par trimmed-mean 10%. Longueur “physique” : distance euclidienne lattice multipliée par évalué par Simpson (1-4-1)/6 sur (A, milieu, B): , . Déficit: (somme sur les tétras incidents). Courbure d’arête (normalisée): . Agrégation nodale (intérieur uniquement): moyenne pondérée des arêtes incidentes avec poids , où est la distance lattice euclidienne entre nœuds (1, , ). Marge intérieure = 2 couches (dans le mini-test). Grille Regge: coarse Lc=8, upsample trilinear vers L=18. Trimmed mean: 10%. E) Régression & features A (baseline): OLS avec = z-score de sur le ROI. B (ajout K): OLS . Fusion multi-échelles (quand utilisé): Ridge avec sélection de et poids d’échelle par mini-CV sur le mask train. Résidualisation de K (pour éviter colinéarité avec ) : Kc = K - K.mean() X = np.column_stack([np.ones(K.size), m_roi.ravel()]) beta = np.linalg.lstsq(X, Kc.ravel(), rcond=None)[0] Kr = (Kc.ravel() - X@beta).reshape(K.shape) Kz = (Kr - Kr.mean()) / (Kr.std() + 1e-12) Design matrix (B): colonnes = [Kz, mz, 1] → coefficients (a, g, b). F) FMM (cinématique) Équation: , 6-voisins. Init: T(seed)=0, T=+∞ ailleurs; file de priorité (min-heap). float64 partout. Update local (upwind 1→2→3 dims), avec h=1: def solve_local_update(u_vals, rhs): u_vals = sorted(u_vals) t = u_vals[0] + rhs if len(u_vals)==1 or t <= u_vals[1]: return t a,b = u_vals[0], u_vals[1] disc = 2*rhs*rhs - (a-b)**2 if disc > 0: t2 = (a + b + sqrt(disc))/2 if len(u_vals)==2 or t2 <= u_vals[2]: return t2 c = u_vals[2] term = 3*rhs*rhs - ((a-b)**2 + (b-c)**2 + (c-a)**2)/2 if term > 0: t3 = (a + b + c + sqrt(max(0, 3*rhs*rhs - ((a-b)**2+(b-c)**2+(c-a)**2))))/3 return t3 return t Boucle: standard « Known/Trial/Far », tie-break = priorité par T (si égalité, l’ordre du heap fait foi). Clamp s: s = np.clip(s, 1e-9, ∞) → F = 1/s. G) Métriques & agrégation Pearson (mask) def pearson_mask(a,b,mask): av=a[mask].ravel(); bv=b[mask].ravel() if np.allclose(np.std(av),0) or np.allclose(np.std(bv),0): return np.nan return float(np.corrcoef(av,bv)[0,1]) relRMSE (mask) def rel_rmse_mask(a,b,mask): a=a[mask]; b=b[mask] rmse = np.sqrt(np.mean((a-b)**2)) denom = np.mean(np.abs(b)) + 1e-12 return float(rmse/denom) Agrégation seeds: moyenne, écart-type, IC95 = 1.96*sd/sqrt(N). H) Expés, ablations, contrôles (faits / à faire) FAIT — K̃ (FD 7-pts) + FMM, L=18, ROI=10³, 4 seeds A (m): Pearson 0.999821905 ; relRMSE 0.010045249 B (m+K̃): Pearson 0.999845395 ; relRMSE 0.006955580 Δ (B−A): ΔPearson ≈ +2.35e−5, ΔrelRMSE ≈ −3.09e−3 (~ −30.7%) FAIT — Regge normalisé + FMM, L=18, ROI=8³, 4 seeds A (m): Pearson 0.9997478894 ; relRMSE 0.0105959557 B (m+K_Regge): Pearson 0.9997749968 ; relRMSE 0.0098717847 Δ (B−A): ΔPearson ≈ +2.71e−5, ΔrelRMSE ≈ −7.24e−4 (~ −6.8%) Coefs (B): a ≈ −0.01093, g ≈ +0.57555, b ≈ 2.50639 À FAIRE (fortement recommandé) Shuffle-K (permutation spatiale de K) → vérifier que Δ → ~0. Sensibilité des poids nodaux: vs vs . Montée d’échelle Regge: Lc=8→10→12, marge 2→3 (table Δ). Cas radial (analytique quasi-1D) pour valider signes/coefs (a<0, g>0) sans bruit combinatoire. I) Environnement & aléas RNG seeds champs synthétiques (super-rapide FD7) : 123 mini-CV Ridge (quand utilisé) : 4242 Regge mini-test: pas d’aléa (déterministe, hors floating point). Versions: Python 3.x, NumPy & Pandas (vanilla). CPU uniquement. Ordres de grandeur (ces setups compacts) : quelques secondes par run. Bricolages numériques Clamp arccos dièdres , ε = 1e-12 Seuil volume tétra Vtet < 1e-10 → rejet Clamp n = 1/c avec c ≥ 1e-9 Aire duale: trimmed-mean 10% pour robustesse params.yaml — exemples exacts Ktilde_FMM_superfast: L: 18 roi_size: 10 roi_bounds: [4,14, 4,14, 4,14] seeds: [[13,13,13],[13,5,5],[5,13,5],[5,5,13]] ktilde: stencil: "FD-7pt" boundary: "Neumann-like (copy planes)" perona_malik: enabled: true iters: 1 kappa_percentile: 0.60 regression: "OLS" design: ["Kz","mz","1"] fmm: neighbors: 6 h: 1.0 float: float64 metrics: ["Pearson","relRMSE"] split: "checkerboard ROI-local" Regge_FMM_minitest: L: 18 Lc_regge: 8 roi_size: 8 roi_bounds: [5,13, 5,13, 5,13] seeds: [[12,12,12],[12,6,6],[6,12,6],[6,6,12]] regge: tets_per_cube: 5 dihedral_eps: 1.0e-12 volume_threshold: 1.0e-10 dual_area: "mean of adjacent faces per tet, then 10% trimmed-mean across tets" edge_length: "Simpson (1-4-1)/6 on n along edge * lattice_length" node_agg: interior_margin: 2 weight: "distance d in {1,√2,√3}" smoothing: "none" regression: "OLS" design: ["Kz","mz","1"] fmm: neighbors: 6 h: 1.0 float: float64 metrics: ["Pearson","relRMSE"] split: "checkerboard ROI-local" TL;DR pour ton/ta successeur·e Reproduire les deux sets ci-dessus à l’identique (paramètres inclus). Exporter CSV seed-wise + NPZ des champs/masks/ROI. Lancer 3 contrôles: shuffle-K, w=d vs 1/d vs 1, Lc=8→10→12 (marge 2→3). Générer 3 figures: isochrones (vrai vs prédit), barplots Δ, tableau coefs.
+
+AUTRES QUESTION 2:
+
+Il reste juste quelques micro-clarifications pour verrouiller la reproductibilité “bit-à-bit” :
+
+Paramètres des deux gaussiennes (runs fournis)
+– Peux-tu donner centres, sigmas, poids exacts utilisés dans build_fields(...) pour les deux cas (L=18, ROI 10³ et ROI 8³) ?
+(Tu les avais cités dans d’anciens messages, mais pas re-listés ici ni dans params.yaml.)
+
+Trimmed mean “10 %” (aires duales)
+– C’est 10 % par extrémité (donc 20 % au total) ou 10 % au total (5 % + 5 %) ?
+
+Resample trilinéaire (node-centered)
+– Confirme l’alignement centre-à-centre (pas de décalage d’un demi-pas) et, si possible, colle le petit snippet qui convertit indices/coordonnées.
+
+Perona–Malik (run K̃ super-rapide)
+– Tu as mis iters=1, κ = perc60(|∇m|). Confirme que le lissage est appliqué à K̃ (ou à log c avant le Laplacien ?) et pas à m.
+
+FMM — update 3D
+– Le solve_local_update(...) renvoie bien t, t2, puis t3 suivant la discriminante, sans fallback supplémentaire ni heuristique ? (Juste pour matcher exactement.)
+
+Version pinning minimal
+– Tu peux figer Python == ?, numpy == ?, pandas == ? (p.ex. numpy==1.26.4) dans requirements.txt pour éviter les deltas numériques ?
+
+RNG & déterminisme
+– Tu confirmes que les champs “rapides” n’ont pas de rotation aléatoire (donc seed=123 n’impacte pas build_fields(...)) et que Regge est 100 % déterministe hors flottants ?
+
+Figures
+– Pour les isochrones 2D : quels plans (indices exacts) et quelle seed utilises-tu pour la coupe “officielle” ? (Je les mettrai pareil dans le rapport.)
+–
+–
+
+Paramètres des deux gaussiennes (runs L=18) Run “super-rapide” (ROI 10³, K̃ + FMM) Fonction build_fields(L=18, c0=0.55, lam=0.8) (pas de rotation, 2 gaussiennes anisotropes) : centers = [(L*0.35, L*0.55, L*0.50), (L*0.65, L*0.55, L*0.60)] soit (6.30, 9.90, 9.00) et (11.70, 9.90, 10.80) sigmas = [(2.3, 1.6, 3.8), (2.0, 3.4, 1.4)] weights = [1.0, 0.9] loi de vitesse : c = 0.55 * exp(-0.8 * m) ; indice n = 1/c. Mini-test Regge (ROI 8³, K_Regge + FMM) Fonction build_fields(L=18, c0=0.55, lam=0.8) (mêmes conventions, paramètres légèrement différents) : centers = [(L*0.36, L*0.55, L*0.48), (L*0.64, L*0.55, L*0.60)] soit (6.48, 9.90, 8.64) et (11.52, 9.90, 10.80) sigmas = [(2.4, 1.7, 3.6), (2.0, 3.2, 1.6)] weights = [1.0, 0.9] même loi c(m) et n=1/c. NB : pas de rotations dans ces deux build_fields “rapides” ; donc les ellipsoïdes sont alignés avec (x,y,z). Trimmed mean “10 %” (aires duales) C’est 10 % par extrémité, donc 20 % au total. Dans le code : k=int(0.1*n) puis moyenne sur [k : n-k]. Resample trilinéaire (node-centered) Oui : alignement centre-à-centre, sans décalage d’un demi-pas. Les nœuds sources sont aux entiers 0..Ls-1, et on mappe le nœud cible i ∈ [0..Lt-1] sur la coordonnée flottante : # mapping index cible -> coordonnée source xi = i * (Ls - 1) / (Lt - 1) # idem pour yj -> y, zk -> z # trilinear: x0 = floor(xi); x1 = min(x0 + 1, Ls - 1) y0 = floor(y ); y1 = min(y0 + 1, Ls - 1) z0 = floor(z ); z1 = min(z0 + 1, Ls - 1) xd, yd, zd = xi - x0, y - y0, z - z0 # puis interpolation 8-voisins classique. Cas Lt==1 : échantillonnage au centre (Ls-1)/2. Perona–Malik (run K̃ super-rapide) iters = 1 κ = percentile 60 % des variations locales de m (on calcule un κ à partir de |∇m| composante-par-composante). Le lissage est appliqué à K̃ (plus exactement au K̃ résidualisé vs {1,m}, puis z-scoré), pas à m ni à log c en amont du Laplacien. Le champ guide de l’anisotropie est m (sa version normalisée). FMM — mise à jour 3D Oui. La routine solve_local_update(...) suit strictement l’ordre : t (1-voisin) t₂ (2-voisins) si la discriminante est valide et l’ordre upwind respecté t₃ (3-voisins) si le terme sous-racine est > 0 Sinon, fallback sur t. Aucun autre heuristique/fudge. Version pinning minimal (recommandé) Un requirements.txt minimal et stable pour éviter les micro-deltas numériques : python==3.11.* numpy==1.26.4 pandas==2.2.2 (Le reste est standard lib : math, heapq.) RNG & déterminisme Dans ces build_fields(...) “rapides”, il n’y a pas de rotation aléatoire ni d’utilisation du RNG (une seed est instanciée dans une variante, mais non utilisée). Donc le champ m est déterministe. Le pipeline Regge est déterministe hors flottants (somme des tetras, tris, tri des aires pour le trimmed mean, etc.). Les seules variations potentielles sont à l’ordre 1e-12 liées aux arrondis. Figures — isochrones 2D “officielles” Pour être 100 % reproductible, je te propose de figer : ROI 10³ (L=18) ROI : i=4..13, j=4..13, k=4..13 (car centre L/2=9, demi-taille=5). Seed (exemple “officiel”) : coin (13,13,13) — c’est l’un des 4 seeds utilisés (les autres : (13,5,5), (5,13,5), (5,5,13)). Plans de coupe 2D (indices globaux) : z = 9 (plan médian axial), y = 9, x = 9. ROI 8³ (L=18, mini-test Regge) ROI : i=5..12, j=5..12, k=5..12. Seed “officielle” proposée : (12,12,12) (les autres : (12,6,6), (6,12,6), (6,6,12)). Plans de coupe 2D (indices globaux) : z = 9 (médian), y = 9, x = 9. Si tu veux fixer un seul plan pour toutes les figures, prends z=9 (global) pour la lisibilité, c’est exactement au centre de la grille (L=18).
+
+

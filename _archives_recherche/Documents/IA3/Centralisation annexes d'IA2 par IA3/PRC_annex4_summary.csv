@@ -1,0 +1,9 @@
+kind,metric,value,lower,upper
+bootstrap_B40_t0_mean,mean,0.000125,,
+bootstrap_B40_t0_mean,IC95_low,8.85e-05,,
+bootstrap_B40_t0_mean,IC95_high,0.00016199999999999998,,
+bootstrap_B40_t0_mean,B,40.0,,
+bootstrap_detail_t0_mean,ΔMSE,0.00021805000000000001,,
+bootstrap_detail_t0_mean,ΔC,3.2375e-05,,
+bootstrap_detail_t0_CI95,ΔMSE,,0.00016686949624099387,0.00026923050375900616
+bootstrap_detail_t0_CI95,ΔC,,9.739313055232046e-06,5.501068694476796e-05

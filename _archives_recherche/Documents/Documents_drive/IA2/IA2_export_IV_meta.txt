@@ -1,0 +1,6 @@
+shape=(18,18,18)
+zscore=ROI entier, par temps
+ROI=L18 cube 8^3 (indices [5:13])
+split=damier (i+j+k)%2==0
+Regge:marge=2, Lc=10 (t0)
+coeffs_t0:a_m=0.487,b_K=-0.0128,b_m=0.561

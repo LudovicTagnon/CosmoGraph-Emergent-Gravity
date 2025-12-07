@@ -1,0 +1,10 @@
+.venv/
+venv/
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
+python_project/outputs/*.csv
+python_project/outputs/*.txt
+python_project/outputs/*.md
