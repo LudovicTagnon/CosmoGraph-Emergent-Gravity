@@ -8,7 +8,7 @@
 
 \graphicspath{{python_project/outputs/}}
 
-\title{Emergent Gravity and Dark Matter Phenomenology\\from Information Geometry in Galaxy Networks}
+\title{Graph Topology as a Proxy for Large-Scale Clustering\\(An Information-Geometry Perspective)}
 \author{CosmoGraph Collaboration}
 \date{\today}
 
@@ -16,7 +16,7 @@
 \maketitle
 
 \begin{abstract}
-We ask how much of the phenomenology usually attributed to dark matter can be encoded in the topology of the galaxy network. Galaxies are nodes, proximity links define the graph, and node centrality plays the role of an information-based ``mass'' proxy. Using Sloan Digital Sky Survey (SDSS) data, we measure: (i) the correlation between local strength (weighted degree) and eigenvector centrality; (ii) the power spectrum $P(k)$ of the galaxy distribution versus the power spectrum obtained when weighting nodes by centrality; and (iii) a transfer function $T(k)=P_{\mathrm{real}}/P_{\mathrm{random}}$ to remove grid artifacts. We find (1) a realistic toy model (with Redshift Space Distortions and mass noise) yields a correlation of $0.259$, close to SDSS ($0.223$), while the ideal model reaches $0.397$; (2) raw spectral slopes are $-2.98$ (mass) and $-2.72$ (topology) with a bias $\simeq 1.5$; (3) transfer-function slopes are $-1.61$ (mass) and $-1.32$ (topology), showing centrality captures a non-trivial fraction of the clustering signal beyond voxel artifacts. Randomized catalogs collapse both mass and topology to the grid slope ($\sim-1.4$), confirming the signal is cosmological. This provides a falsifiable framework suggesting that part of gravity/dark-matter phenomenology can be encoded in graph topology.
+We test to what extent graph topology can serve as a complementary proxy for the clustering usually attributed to the underlying mass (including dark matter). Galaxies are nodes, proximity links define the graph, and node centrality plays the role of an information-based ``mass'' proxy. Using Sloan Digital Sky Survey (SDSS) data, we measure: (i) the correlation between local strength (weighted degree) and centralities; (ii) the power spectrum $P(k)$ of the galaxy distribution versus the power spectrum obtained when weighting nodes by centrality; and (iii) a transfer function $T(k)=P_{\mathrm{real}}/P_{\mathrm{random}}$ to remove grid artifacts. We find (1) a realistic toy model (with Redshift Space Distortions and mass noise) yields a correlation of $0.259$, close to SDSS ($0.223$), while the ideal model reaches $0.397$; (2) raw spectral slopes are $-2.98$ (mass) and $-2.72$ (topology) with a bias $\simeq 1.5$; (3) transfer-function slopes are $-1.61$ (mass) and $-1.32$ (topology), showing centrality captures a non-trivial fraction of the clustering signal beyond voxel artifacts. Randomized catalogs collapse both mass and topology to the grid slope ($\sim-1.4$), confirming the signal is cosmological. We provide bootstrap errors on node-level correlations; uncertainties on power-spectrum slopes are left for future work. The results should be viewed as a topological proxy, not a replacement for standard mass-based analyses.
 \end{abstract}
 
 \section{Introduction}
@@ -32,14 +32,20 @@ We voxelize the point set on a $64^3$ grid (box size $\sim$300\,Mpc units), form
 
 \section{Results}
 \subsection{Correlations}
-Pearson correlations (Strength vs Centrality):
+Pearson correlations (Strength vs Centrality), bootstrap errors (10k resamples):
 \begin{itemize}
   \item Ideal toy: $0.397$
   \item Realistic toy (RSD + noise): $0.259$
   \item SDSS (buffered LCC): $0.223$
-  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; at $k=10$, $0.16\pm0.05$; at $k=20$, $0.20\pm0.04$; at $k=30$, $0.33\pm0.02$. Closeness yields lower corr ($\sim 0.09\pm0.02$ at $k=10$, up to $\sim 0.23\pm0.02$). Skewness of eigenvector centrality $\sim 26$ (few hubs dominate).
+  \item SDSS robustness (5k subsample, LCC $\sim$1909):
+    \begin{itemize}
+      \item eigenvector: $k=5 \Rightarrow 0.20\pm0.05$, $k=10 \Rightarrow 0.16\pm0.05$, $k=20 \Rightarrow 0.20\pm0.04$;
+      \item closeness: $k=5 \Rightarrow 0.07\pm0.02$, $k=10 \Rightarrow 0.09\pm0.02$, $k=20 \Rightarrow 0.19\pm0.02$;
+      \item degree: $1.0$ (identique à la strength).
+    \end{itemize}
+    Skewness of eigenvector centrality $\sim 26$ (few hubs dominate).
 \end{itemize}
-The realistic toy converges toward the observed SDSS value once observational distortions are applied.
+The realistic toy converges toward the observed SDSS value once observational distortions are applied. 
 
 \subsection{Power spectra}
 Raw $P(k)$ slopes: $-2.98$ (mass) vs $-2.72$ (topology); bias $\sim 1.5$. Random catalogs show grid-induced slopes $\sim -1.4$ (no cosmological signal).
@@ -82,7 +88,7 @@ In X--Z projection, the realistic toy (with RSD) visually matches SDSS ``Fingers
 \end{figure}
 
 \section{Discussion}
-The clustering excess beyond random is encoded similarly in mass and topological centrality. The realistic toy bridges most of the gap to SDSS once RSD and mass scatter are included, suggesting that observational effects explain much of the reduced correlation. Limitations: moderate correlation ($\sim$0.22) on SDSS, sensitivity to $k$-NN choice and slice, centrality values are highly skewed (a few hubs dominate), no explicit baryon/fermion sector, and uncertainties on $P(k)$/$T(k)$ not yet included (jackknife/bootstrap pending). Scripts for k-scan/centrality variants and corr error estimates are provided; a full error budget and higher-resolution $\Lambda$CDM comparison (with BAO) are deferred. Future work: larger surveys (BOSS/eBOSS), error bars via $k$ and slice variations plus bootstrap/jackknife, and analytical links between centrality and density contrast.
+The clustering excess beyond random is encoded similarly in mass and topological centrality. The realistic toy bridges most of the gap to SDSS once RSD and mass scatter are included, suggesting that observational effects explain much of the reduced correlation. Limitations: moderate correlation ($\sim$0.22) on SDSS, sensitivity to $k$-NN choice and slice, centrality values are highly skewed (a few hubs dominate), no explicit baryon/fermion sector, and no uncertainties yet on $P(k)$/$T(k)$ (jackknife/bootstrap deferred). Scripts for k-scan/centrality variants and corr error estimates are provided; a full error budget and higher-resolution $\Lambda$CDM comparison (with BAO) are deferred. Future work: larger surveys (BOSS/eBOSS), error bars via $k$ and slice variations plus bootstrap/jackknife, and analytical links between centrality and density contrast.
 
 \section{Conclusion}
 We provide a falsifiable proposal that a non-trivial part of the clustering signal usually attributed to dark matter can be encoded in the topology of the galaxy network. Centrality reproduces the cosmological clustering signal in both configuration space (Fingers of God) and Fourier space (transfer-function slopes near mass). This opens a data-driven path to ``information gravity'' as a complementary description to particle dark matter.
