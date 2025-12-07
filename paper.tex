@@ -37,6 +37,7 @@ Pearson correlations (Strength vs Centrality):
   \item Ideal toy: $0.397$
   \item Realistic toy (RSD + noise): $0.259$
   \item SDSS (buffered LCC): $0.223$
+  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; skewness of eigenvector centrality $\sim 26$ (few hubs dominate).
 \end{itemize}
 The realistic toy converges toward the observed SDSS value once observational distortions are applied.
 
@@ -59,6 +60,12 @@ In X--Z projection, the realistic toy (with RSD) visually matches SDSS ``Fingers
   \centering
   \includegraphics[width=0.95\textwidth]{power_spectrum_combined.png}
   \caption{Left: raw $P(k)$ (mass vs topology) with bias. Right: transfer functions $T(k)=P_{\mathrm{real}}/P_{\mathrm{random}}$; slopes $-1.61$ (mass) and $-1.32$ (topology).}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{power_with_lcdm.png}
+  \caption{$P(k)$ (mass/topology) with a simple $\Lambda$CDM-like power-law reference ($n_s\simeq 0.96$, normalized at mid-$k$).}
 \end{figure}
 
 \begin{figure}[h]
