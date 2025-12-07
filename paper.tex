@@ -23,7 +23,7 @@ We ask how much of the phenomenology usually attributed to dark matter can be en
 The large-scale universe exhibits a scale-free ``cosmic web''. We explore whether part of the phenomenology usually attributed to dark matter can be captured by the topology of a galaxy network: galaxies are nodes; edges connect near neighbors; centrality (information flow) stands in for mass. Rather than assuming a specific dark-matter particle model, we test how much clustering signal is encoded in the graph.
 
 \section{Data and Graph Construction}
-\paragraph{SDSS slice.} We select galaxies with $0.04<z<0.12$, $130<\mathrm{RA}<240$, $-5<\mathrm{DEC}<60$, then restrict to an inner buffer ($0.05<z<0.11$, $135<\mathrm{RA}<235$, $0<\mathrm{DEC}<55$) for statistics. Positions are converted to Cartesian $(x,y,z)$ using the low-$z$ approximation $D \simeq cz/H_0$ (cosmology not critical for this local slice). We build a $k$-NN graph with $k=10$, edge weights $w=1/d$, and keep the largest connected component (LCC), containing $\sim$3.5k galaxies in the buffered slice. Strength $S_i=\sum_j w_{ij}$ (``mass proxy'') and eigenvector centrality $C_i$ (information proxy) are computed on the LCC.
+\paragraph{SDSS slice.} We select galaxies with $0.04<z<0.12$, $130<\mathrm{RA}<240$, $-5<\mathrm{DEC}<60$, then restrict to an inner buffer ($0.05<z<0.11$, $135<\mathrm{RA}<235$, $0<\mathrm{DEC}<55$) for statistics. Positions are converted to Cartesian $(x,y,z)$ using the low-$z$ approximation $D \simeq cz/H_0$ (cosmology not critical for this local slice). We build a $k$-NN graph with $k=10$, edge weights $w=1/d$, and keep the largest connected component (LCC), containing $\sim$3.5k galaxies in the buffered slice (robustness run shown on a 5k subsample, LCC $\sim$1909 for speed). Strength $S_i=\sum_j w_{ij}$ (``mass proxy'') and eigenvector centrality $C_i$ (information proxy) are computed on the LCC.
 
 \paragraph{Toy universes.} An ``ideal'' toy universe uses synthetic clusters/filaments (3\,000 points, $k=20$). A ``realistic'' toy adds Redshift Space Distortions (Gaussian noise on $z$, $\sigma_z\approx 5\%$ of box size) and lognormal scatter on mass (median 1, $\sigma_{\ln M}=0.5$).
 
@@ -37,7 +37,7 @@ Pearson correlations (Strength vs Centrality):
   \item Ideal toy: $0.397$
   \item Realistic toy (RSD + noise): $0.259$
   \item SDSS (buffered LCC): $0.223$
-  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; skewness of eigenvector centrality $\sim 26$ (few hubs dominate).
+  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; skewness of eigenvector centrality $\sim 26$ (few hubs dominate). Closeness yields lower corr ($\sim 0.07$--$0.23$).
 \end{itemize}
 The realistic toy converges toward the observed SDSS value once observational distortions are applied.
 
@@ -65,7 +65,14 @@ In X--Z projection, the realistic toy (with RSD) visually matches SDSS ``Fingers
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{power_with_lcdm.png}
-  \caption{$P(k)$ (mass/topology) with a simple $\Lambda$CDM-like power-law reference ($n_s\simeq 0.96$, normalized at mid-$k$).}
+  \caption{$P(k)$ (mass/topology) with a simple $\Lambda$CDM-like power-law reference ($n_s\simeq 0.96$, normalized at mid-$k$); illustrative only (no BAO/wiggles).}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.48\textwidth]{sensitivity_corr_vs_k.png}
+  \includegraphics[width=0.48\textwidth]{centrality_hist.png}
+  \caption{Left: robustness of corr(strength, centrality) vs $k$ (bootstrap, SDSS subsample). Right: eigenvector centrality distribution (highly skewed; few hubs dominate).}
 \end{figure}
 
 \begin{figure}[h]
