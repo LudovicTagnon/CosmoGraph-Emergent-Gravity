@@ -72,6 +72,9 @@ python scripts/fetch_and_test_real_sdss.py
 streamlit run app.py
 ```
 
+### Données externes
+- Les scripts utilisent un échantillon SDSS local. Vous pouvez tester d’autres catalogues publics, par ex. le dataset Kaggle “SDSS Galaxy Classification DR18” : https://www.kaggle.com/datasets/bryancimo/sdss-galaxy-classification-dr18 (non inclus dans le dépôt). Placez le CSV dans `python_project/data/` et adaptez `fetch_and_test_real_sdss.py` si besoin.
+
 ---
 
 ## 📊 Résultats Clés
