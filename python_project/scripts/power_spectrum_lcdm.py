@@ -5,6 +5,7 @@ from pathlib import Path
 from sklearn.neighbors import kneighbors_graph
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "sdss_100k_galaxy_form_burst.csv"
+LCDM_PATH = Path(__file__).resolve().parent.parent.parent / "pk_lcdm.txt"
 OUT_IMG = Path(__file__).resolve().parent.parent / "outputs" / "power_with_lcdm.png"
 
 
@@ -73,12 +74,6 @@ def fit_slope(k, p, kmin=0.05, kmax=0.3):
     return coef[0]
 
 
-def lcdm_reference(k, ns=0.96):
-    # Simple power-law reference P ~ k^{ns-4}; normalized to match mass spectrum at mid-k
-    slope = ns - 4  # ~ -3.04
-    return k ** slope
-
-
 def main():
     df = load_sdss_slice()
     coords = ra_dec_z_to_cartesian(df)
@@ -99,14 +94,19 @@ def main():
     k_mr, Pmr = compute_pk(rand_coords, w_m_r, grid=64)
     k_tr, Ptr = compute_pk(rand_coords, w_t_r, grid=64)
 
-    # match LCDM amplitude at median k of mass spectrum
-    k_ref = k_m
-    lcdm = lcdm_reference(k_ref)
-    # scale to match Pm at mid k
-    mid = len(k_ref) // 2
-    if lcdm[mid] != 0:
-        scale = Pm[mid] / lcdm[mid]
-        lcdm *= scale
+    # load LCDM table and interpolate to our k range
+    if LCDM_PATH.exists():
+        lcdm_tab = pd.read_csv(LCDM_PATH)
+        k_ref = lcdm_tab.iloc[:, 0].to_numpy()
+        P_ref = lcdm_tab.iloc[:, 1].to_numpy()
+        # interpolate on our k grid
+        P_lcdm = np.interp(k_m, k_ref, P_ref, left=np.nan, right=np.nan)
+        # drop nans
+        mvalid = ~np.isnan(P_lcdm)
+        k_lcdm = k_m[mvalid]
+        P_lcdm = P_lcdm[mvalid]
+    else:
+        k_lcdm = np.array([]); P_lcdm = np.array([])
 
     slope_m = fit_slope(k_m, Pm)
     slope_t = fit_slope(k_t, Pt)
@@ -118,14 +118,14 @@ def main():
     plt.figure(figsize=(10, 5))
     plt.loglog(k_m, Pm, 'o-', label=f'Mass (slope {slope_m:.2f})', color='orange')
     plt.loglog(k_t, Pt, 'x--', label=f'Topo (slope {slope_t:.2f})', color='blue')
-    plt.loglog(k_ref, lcdm, ':', label='LCDM-like ref (ns~0.96)', color='gray')
-    plt.xlabel('k'); plt.ylabel('P(k)'); plt.title('P(k) with LCDM-like reference')
+    if len(k_lcdm):
+        plt.loglog(k_lcdm, P_lcdm, ':', label='ΛCDM ref (table)', color='gray')
+    plt.xlabel('k'); plt.ylabel('P(k)'); plt.title('P(k) with ΛCDM reference')
     plt.legend(); plt.grid(True, which='both', alpha=0.3)
     plt.tight_layout(); plt.savefig(OUT_IMG, dpi=200)
     print(f"Saved {OUT_IMG}")
 
-    # save arrays for reuse
-    np.savez(OUT_IMG.with_suffix('.npz'), k_m=k_m, Pm=Pm, k_t=k_t, Pt=Pt, k_mr=k_mr, Pmr=Pmr, k_tr=k_tr, Ptr=Ptr, lcdm=k_ref)
+    np.savez(OUT_IMG.with_suffix('.npz'), k_m=k_m, Pm=Pm, k_t=k_t, Pt=Pt, k_mr=k_mr, Pmr=Pmr, k_tr=k_tr, Ptr=Ptr, k_lcdm=k_lcdm, P_lcdm=P_lcdm)
 
 if __name__ == "__main__":
     main()
