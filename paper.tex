@@ -37,7 +37,7 @@ Pearson correlations (Strength vs Centrality):
   \item Ideal toy: $0.397$
   \item Realistic toy (RSD + noise): $0.259$
   \item SDSS (buffered LCC): $0.223$
-  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; skewness of eigenvector centrality $\sim 26$ (few hubs dominate). Closeness yields lower corr ($\sim 0.07$--$0.23$).
+  \item SDSS robustness (bootstrap on 5k slice, LCC $\sim$1909): eigenvector corr ranges $\sim 0.16$--$0.33$ when $k$ varies 5--30; at $k=10$, $0.16\pm0.05$; at $k=20$, $0.20\pm0.04$; at $k=30$, $0.33\pm0.02$. Closeness yields lower corr ($\sim 0.09\pm0.02$ at $k=10$, up to $\sim 0.23\pm0.02$). Skewness of eigenvector centrality $\sim 26$ (few hubs dominate).
 \end{itemize}
 The realistic toy converges toward the observed SDSS value once observational distortions are applied.
 
@@ -65,7 +65,7 @@ In X--Z projection, the realistic toy (with RSD) visually matches SDSS ``Fingers
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{power_with_lcdm.png}
-  \caption{$P(k)$ (mass/topology) with a simple $\Lambda$CDM-like power-law reference ($n_s\simeq 0.96$, normalized at mid-$k$); illustrative only (no BAO/wiggles).}
+  \caption{$P(k)$ (mass/topology) with a $\Lambda$CDM reference table ($k, P(k)$ tabulated); BAO/wiggles not resolved at this resolution. Error bars on $P(k)$/$T(k)$ to be added in future jackknife/bootstrap.}
 \end{figure}
 
 \begin{figure}[h]
@@ -82,7 +82,7 @@ In X--Z projection, the realistic toy (with RSD) visually matches SDSS ``Fingers
 \end{figure}
 
 \section{Discussion}
-The clustering excess beyond random is encoded similarly in mass and topological centrality. The realistic toy bridges most of the gap to SDSS once RSD and mass scatter are included, suggesting that observational effects explain much of the reduced correlation. Limitations: moderate correlation ($\sim$0.22) on SDSS, sensitivity to $k$-NN choice and slice, centrality values are highly skewed (a few hubs dominate), no explicit baryon/fermion sector, and no uncertainties yet on correlations or slopes. We defer a full error analysis (k-scan, slice variations, bootstrap) and comparison to a $\Lambda$CDM $P(k)$ template to future work; scripts for k-scan/centrality variants are provided. Future work: larger surveys (BOSS/eBOSS), barres d'erreur via variations de $k$ et de slice, bootstrap, et liens analytiques entre centralité et contraste de densité.
+The clustering excess beyond random is encoded similarly in mass and topological centrality. The realistic toy bridges most of the gap to SDSS once RSD and mass scatter are included, suggesting that observational effects explain much of the reduced correlation. Limitations: moderate correlation ($\sim$0.22) on SDSS, sensitivity to $k$-NN choice and slice, centrality values are highly skewed (a few hubs dominate), no explicit baryon/fermion sector, and uncertainties on $P(k)$/$T(k)$ not yet included (jackknife/bootstrap pending). Scripts for k-scan/centrality variants and corr error estimates are provided; a full error budget and higher-resolution $\Lambda$CDM comparison (with BAO) are deferred. Future work: larger surveys (BOSS/eBOSS), error bars via $k$ and slice variations plus bootstrap/jackknife, and analytical links between centrality and density contrast.
 
 \section{Conclusion}
 We provide a falsifiable proposal that a non-trivial part of the clustering signal usually attributed to dark matter can be encoded in the topology of the galaxy network. Centrality reproduces the cosmological clustering signal in both configuration space (Fingers of God) and Fourier space (transfer-function slopes near mass). This opens a data-driven path to ``information gravity'' as a complementary description to particle dark matter.
