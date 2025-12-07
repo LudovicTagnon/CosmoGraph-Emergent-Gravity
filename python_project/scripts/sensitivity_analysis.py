@@ -10,10 +10,13 @@ from tqdm import tqdm
 
 
 def load_sdss_csv(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    required = {"ra", "dec", "z"}
-    if not required.issubset(df.columns):
-        raise ValueError(f"CSV must contain columns {required}")
+    df = pd.read_csv(path, comment="#", low_memory=False)
+    if {"ra", "dec", "z"}.issubset(df.columns):
+        pass
+    elif {"ra", "dec", "redshift"}.issubset(df.columns):
+        df = df.rename(columns={"redshift": "z"})
+    else:
+        raise ValueError("CSV must contain ra, dec and either z or redshift")
     return df
 
 
@@ -89,6 +92,8 @@ def main():
         raise FileNotFoundError(f"Data not found at {data_path}")
 
     df = load_sdss_csv(data_path)
+    # optional cap to accelerate robustness scan
+    df = df.head(5000)
     if len(df) < 200:
         raise ValueError("Dataset too small for sensitivity analysis.")
 

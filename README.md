@@ -68,6 +68,7 @@ python scripts/simulate_expansion.py
 python scripts/power_spectrum_combined.py
 python scripts/fetch_and_test_real_sdss.py
 python scripts/sensitivity_analysis.py
+python scripts/plot_sensitivity.py
 
 # Lancer l'interface
 streamlit run app.py
